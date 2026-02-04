@@ -1,6 +1,11 @@
 # Changelog
 
-## [2.0.0] - 2025-02-05
+## [2.0.2] - 2025-02-04
+
+### Fixed
+- Linting issues
+
+## [2.0.0] - 2025-02-04
 
 ### Removed
 - Removed deprecated architectures
