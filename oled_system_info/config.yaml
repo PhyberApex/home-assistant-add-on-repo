@@ -19,4 +19,4 @@ schema:
   chip_type: "list(BCM2835|BCM2836|BCM2837|BCM2711|BCM2712)"
 apparmor: false
 hassio_api: true
-image: "ghcr.io/PhyberApex/{arch}-oled-system-info"
+image: "ghcr.io/phyberapex/{arch}-oled-system-info"
