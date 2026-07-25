@@ -1,6 +1,6 @@
 name: "OLED System Info Display"
 description: "Displays system information on SSD1306 OLED screen with GPIO button control for reboot/shutdown"
-version: "2.0.1"
+version: "2.1.0"
 slug: "oled_system_info"
 init: false
 devices:
@@ -14,9 +14,29 @@ privileged:
 options:
   board_type: "RASPBERRY_PI_4B"
   chip_type: "BCM2711"
+  enable_button: true
+  enable_fan_control: false
+  fan_temp_on: 60
+  fan_temp_off: 50
+  flip_display: true
+  show_hostname: true
+  show_ip: true
+  show_cpu: true
+  show_memory: true
+  show_temperature: true
 schema:
   board_type: "list(RASPBERRY_PI_ZERO|RASPBERRY_PI_ZERO_W|RASPBERRY_PI_2B|RASPBERRY_PI_3B|RASPBERRY_PI_3B_PLUS|RASPBERRY_PI_3A_PLUS|RASPBERRY_PI_4B|RASPBERRY_PI_5|RASPBERRY_PI_CM4)"
   chip_type: "list(BCM2835|BCM2836|BCM2837|BCM2711|BCM2712)"
+  enable_button: "bool"
+  enable_fan_control: "bool"
+  fan_temp_on: "int(30,90)"
+  fan_temp_off: "int(20,85)"
+  flip_display: "bool"
+  show_hostname: "bool"
+  show_ip: "bool"
+  show_cpu: "bool"
+  show_memory: "bool"
+  show_temperature: "bool"
 apparmor: false
 hassio_api: true
 image: "ghcr.io/phyberapex/{arch}-oled-system-info"

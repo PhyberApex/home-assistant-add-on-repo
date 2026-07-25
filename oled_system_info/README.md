@@ -3,10 +3,14 @@
 Displays system information on a 128x32 SSD1306 OLED screen connected to Raspberry Pi GPIO.
 
 ## Features
-- Real-time system information display (IP address, hostname, CPU, memory usage)
-- GPIO button control for display interaction
+- Real-time system information display (IP address, hostname, CPU, memory, CPU temperature)
+- Optional GPIO button control (`enable_button`) for display interaction
 - Long-press button for system reboot (~8 seconds)
 - Long-press button for system shutdown (~12 seconds)
+- Always-on display mode (used automatically when the button is disabled), cycling the info
+  screen with a large centered CPU temperature screen
+- Opt-in fan control for PoE HATs with a PCF8574 fan controller (e.g. Waveshare PoE HAT (B))
+- Per-stat visibility toggles and display flip option
 - LED indicator (optional)
 - Configurable for different Raspberry Pi models
 - Auto-starts with Home Assistant
@@ -32,6 +36,11 @@ Displays system information on a 128x32 SSD1306 OLED screen connected to Raspber
 
 ### Button and LED
 See the [original project](https://github.com/leelooauto/system_info) for complete wiring diagram including button and LED connections.
+
+The button is optional — set `enable_button: false` if you don't have one wired (e.g. the
+Waveshare PoE HAT (B), which has no button on GPIO20). Leaving the default `true` with nothing
+wired can cause the pin to float and unintentionally trigger a reboot/shutdown; see
+[DOCS.md](./DOCS.md#unwanted-rebootshutdown-shortly-after-startup-no-button-wired).
 
 ## Prerequisites: Enable I2C on Home Assistant OS
 
@@ -195,12 +204,16 @@ See the **Configuration** tab for the complete list.
 
 ### Display Information
 
-The OLED displays:
+The OLED displays (each individually toggleable, see [DOCS.md](./DOCS.md#display-options)):
 - Hostname and IP address
 - CPU usage percentage
 - Memory usage percentage
+- CPU temperature
 
 ### Button Functions
+
+Applies only when `enable_button: true` (the default). With `enable_button: false`, the display
+runs in always-on mode instead — see [DOCS.md](./DOCS.md#always-on-mode-no-button).
 
 - **Press and release**: Show system information on display
 - **Hold ~8 seconds, then release**: System will reboot
@@ -208,7 +221,20 @@ The OLED displays:
 
 The display shows confirmation messages for reboot/shutdown actions.
 
+### Fan Control
+
+Opt-in (`enable_fan_control`, default `false`) hysteresis-based fan control for PoE HATs with a
+PCF8574 fan controller at I2C `0x20` (e.g. Waveshare PoE HAT (B)). See
+[DOCS.md](./DOCS.md#fan-control) for configuration and credits.
+
 ## Troubleshooting
+
+### Unexpected Reboot/Shutdown Shortly After Startup
+
+If your board has no button wired to GPIO20 (e.g. the Waveshare PoE HAT (B)) and the add-on
+reboots or shuts down the system on its own shortly after starting, the pin is floating and being
+misread as a held button press. Set `enable_button: false` to fix this — see
+[DOCS.md](./DOCS.md#unwanted-rebootshutdown-shortly-after-startup-no-button-wired) for details.
 
 ### Display Not Working
 

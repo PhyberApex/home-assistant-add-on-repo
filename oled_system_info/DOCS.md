@@ -210,6 +210,12 @@ The `3c` shows your OLED is detected!
 | Button Pin 2 | Ground | 39 | - |
 | 10K Resistor | Between GPIO 20 and 3.3V | 1 & 38 | Pull-up |
 
+**If you don't have a button wired** (e.g. boards like the Waveshare PoE HAT (B), which has a
+built-in OLED but no GPIO20 button), set `enable_button: false` in the add-on's Configuration
+tab. Leaving the default (`true`) with nothing wired to GPIO20 lets the pin float, which can be
+misread as a sustained button press and unintentionally trigger a reboot or shutdown shortly
+after startup — see [Troubleshooting](#unwanted-rebootshutdown-shortly-after-startup-no-button-wired).
+
 #### LED (Optional Indicator)
 
 | Component | Connection | Raspberry Pi Pin | GPIO # |
@@ -242,7 +248,7 @@ SCL/GPIO3 [ 5] [ 6] GND
    GPIO 6 [31] [32] GPIO 12
   GPIO 13 [33] [34] GND
   GPIO 19 [35] [36] GPIO 16
-  GPIO 26 [37] [38] GPIO 20      <- Button
+  GPIO 26 [37] [38] GPIO 20      <- Button (optional, see enable_button)
       GND [39] [40] GPIO 21      <- Button GND
 ```
 
@@ -323,13 +329,59 @@ board_type: RASPBERRY_PI_ZERO_W
 chip_type: BCM2835
 ```
 
+### Enabling/Disabling the Button
+
+| Option | Default | Description |
+|--------|---------|--------------|
+| `enable_button` | `true` | Whether to use the GPIO20 button. |
+
+Set `enable_button: false` if you have no button wired (see [Hardware Setup](#button-optional-control)).
+When disabled, GPIO20 is never requested at all, the display runs in
+[always-on mode](#always-on-mode-no-button), and reboot/shutdown from the screen are unavailable
+(there's no button to confirm with).
+
+### Display Options
+
+| Option | Default | Description |
+|--------|---------|--------------|
+| `flip_display` | `true` | `true` mounts the display upside-down relative to `false` (180°). Only these two orientations are supported — 90°/270° would swap the display's width and height, which the fixed-position layout doesn't handle. |
+| `show_hostname` | `true` | Show the `NAME:` line. |
+| `show_ip` | `true` | Show the `IP:` line. |
+| `show_cpu` | `true` | Show CPU usage on the info line. |
+| `show_memory` | `true` | Show memory usage on the info line. |
+| `show_temperature` | `true` | Show CPU temperature on the info line. When `false`, the big temperature screen is also skipped in always-on mode. |
+
+All default to `true`, so upgrading changes nothing unless you edit the configuration.
+
+### Fan Control
+
+Some Raspberry Pi PoE HATs (notably the [Waveshare PoE HAT (B)](https://www.waveshare.com/wiki/PoE_HAT_(B))
+used throughout this document) have a fan controlled through a PCF8574 I2C IO-expander at address
+`0x20`, separate from the OLED's `0x3C`. This add-on can drive that fan with simple
+temperature-based hysteresis:
+
+| Option | Default | Description |
+|--------|---------|--------------|
+| `enable_fan_control` | `false` | Enable fan control. **Off by default** — this add-on supports many boards, not just PoE HATs, and writing to an unknown I2C device at `0x20` on other hardware would be unsafe. Only enable this if you actually have a fan controlled the same way. |
+| `fan_temp_on` | `60` | CPU temperature (°C) at which the fan turns on. |
+| `fan_temp_off` | `50` | CPU temperature (°C) at which the fan turns off. Must be lower than `fan_temp_on`. |
+
+If enabled but no device responds at `0x20`, or the thresholds are invalid, the add-on logs an
+error and disables fan control for that run — the OLED and button keep working normally either way.
+
+This fan protocol was reverse-engineered by, and the defaults here match, two existing open-source
+PoE HAT (B) monitors: [raspi-poe-mon](https://github.com/klamann/raspi-poe-mon) and
+[RustBerry-PoE-Monitor](https://github.com/jackra1n/RustBerry-PoE-Monitor).
+
 ---
 
 ## Usage
 
 ### Display Behavior
 
-**On Startup:**
+This depends on `enable_button` (default `true`).
+
+**With `enable_button: true` (default), on Startup:**
 1. Display shows "Infoscreen Started" for ~5 seconds
 2. Display goes into sleep mode (blank screen)
 
@@ -338,20 +390,40 @@ chip_type: BCM2835
 2. Shows system information
 3. After 15 seconds of no button press, display sleeps again
 
+**With `enable_button: false`:** see [Always-On Mode](#always-on-mode-no-button) below — the
+display never sleeps and there's no button interaction.
+
 ### System Information Shown
 
 ```
 NAME: homeassistant
 IP  : 192.168.1.100
-CPU : 25% | MEM: 45%
+CPU:25% MEM:45% 24C
 ```
 
 - **NAME**: Your Home Assistant hostname
 - **IP**: Current IP address
 - **CPU**: Current CPU usage percentage
 - **MEM**: Current memory usage percentage
+- **Temperature** (e.g. `24C`): Current CPU temperature, read from the host thermal sensor
+
+Each of these can be hidden individually via `show_hostname`/`show_ip`/`show_cpu`/`show_memory`/`show_temperature` — see [Display Options](#display-options).
+
+### Always-On Mode (No Button)
+
+With `enable_button: false`, the display stays on permanently (no sleep timeout) and cycles
+between two screens, ~5 seconds each:
+
+1. The standard info screen (NAME/IP/CPU/MEM/temperature, per your `show_*` settings)
+2. A large, centered CPU temperature reading (skipped if `show_temperature: false`), with a small
+   `FAN ON`/`FAN OFF` status line underneath if `enable_fan_control` is on
+
+Reboot/shutdown are not available in this mode — there's no button to trigger them.
 
 ### Button Controls
+
+The following only applies with `enable_button: true` (the default). With `enable_button: false`,
+see [Always-On Mode](#always-on-mode-no-button) instead.
 
 | Action | Timing | Result |
 |--------|--------|--------|
@@ -371,6 +443,22 @@ CPU : 25% | MEM: 45%
 ---
 
 ## Troubleshooting
+
+### Unwanted Reboot/Shutdown Shortly After Startup (No Button Wired)
+
+**Symptom:** The log shows `BUTTON: Pressed` right around startup with no matching `Released`,
+followed within ~20 seconds by `MENU: Entering REBOOT state` and then `MENU: Entering SHUTDOWN
+state`, and the system actually reboots or shuts down — on hardware with no button/pull-up
+resistor wired to GPIO20 (e.g. the Waveshare PoE HAT (B), which has no such button).
+
+**Cause:** With `enable_button: true` (the only behavior in versions before 2.1.0) and nothing
+physically wired to GPIO20, the pin floats. An unconnected digital input is electrically
+undefined and can read as sustained or intermittent "pressed," which the confirmation state
+machine interprets as hold-then-release — triggering the Supervisor reboot/shutdown call.
+
+**Fix:** Set `enable_button: false` in the add-on's Configuration tab and restart. This prevents
+GPIO20 from being requested at all, and switches the display to
+[always-on mode](#always-on-mode-no-button).
 
 ### I2C Not Detected
 
@@ -509,6 +597,11 @@ The add-on supports: `armhf`, `armv7`, `aarch64`
 ---
 
 ## Advanced Configuration
+
+Button on/off, always-on mode, fan control, display flip, and per-stat visibility are all
+controlled through add-on options (see [Configuration](#configuration)) — no fork/edit needed for
+those. Forking is only needed to change GPIO pin numbers or add hardware this add-on doesn't
+already support.
 
 ### Changing GPIO Pins
 
@@ -672,6 +765,10 @@ MIT License - See [LICENSE.md] for full license text.
 
 ## Version History
 
+- **2.1.0**: CPU temperature display (compact + big always-on screen), `enable_button` option to
+  make the physical button optional (fixes an unwanted reboot/shutdown on boards with GPIO20
+  floating unwired), always-on display mode, opt-in fan control, `flip_display`, and per-stat
+  `show_*` visibility toggles
 - **1.0.0**: Initial release
   - Support for Raspberry Pi 2, 3, 4, 5, Zero
   - I2C OLED display support
