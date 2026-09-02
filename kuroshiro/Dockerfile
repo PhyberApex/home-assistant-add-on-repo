@@ -1,9 +1,12 @@
 ARG BUILD_FROM
 ARG KUROSHIRO_VERSION=0.11.0
 
-# Pinned to amd64 because upstream publishes a single-arch image, and only its
-# architecture-independent JS bundles and static assets are taken from it - the
-# production dependencies are reinstalled below for the add-on's own architecture.
+# Pinned to amd64 because upstream publishes a single-arch image. Everything taken
+# from it is architecture-independent - the JS bundles, the static assets, and
+# node_modules, whose production dependencies are all pure JS. Everything
+# architecture-specific comes from apk below. Reinstalling the dependencies for the
+# target architecture instead is not an option: that runs node under aarch64
+# emulation, where V8 dies with SIGILL.
 FROM --platform=linux/amd64 ghcr.io/phyberapex/kuroshiro:${KUROSHIRO_VERSION} AS kuroshiro
 
 FROM ${BUILD_FROM}
@@ -38,18 +41,14 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-COPY --from=kuroshiro /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=kuroshiro /app/package.json ./package.json
 COPY --from=kuroshiro /app/entrypoint.sh ./entrypoint.sh
+COPY --from=kuroshiro /app/node_modules ./node_modules
 COPY --from=kuroshiro /app/dist ./dist
 COPY --from=kuroshiro /app/public ./public
 
-RUN corepack enable \
-    && pnpm install --prod --ignore-scripts \
-    && chmod +x ./entrypoint.sh
-
 COPY run.sh /run.sh
-RUN chmod a+x /run.sh
+RUN chmod +x /run.sh /app/entrypoint.sh
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/run.sh"]
