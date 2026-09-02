@@ -3,6 +3,18 @@ set -e
 
 OPTIONS_FILE=/data/options.json
 
+export KUROSHIRO_PORT=3000
+export KUROSHIRO_DB_HOST=127.0.0.1
+export KUROSHIRO_DB_PORT=5432
+export KUROSHIRO_DB_USER=kuroshiro
+export KUROSHIRO_DB_PASSWORD=kuroshiro
+export KUROSHIRO_DB_DB=kuroshiro
+
+PGDATA=/data/postgres
+PGSOCKET=/data/postgres-run
+PGLOG=/data/postgres.log
+export PGDATA
+
 log() { echo "[kuroshiro] $*"; }
 
 option() {

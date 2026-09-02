@@ -15,7 +15,8 @@ the port your TRMNL devices poll.
 1. Add this repository to Home Assistant (Settings → Add-ons → Add-on Store → ⋮ → Repositories).
 2. Install the **Kuroshiro** add-on.
 3. Set the `api_url` option if the auto-detected address is not the one your devices should use.
-4. Start the add-on, then point a TRMNL device at `http://<your-ha-ip>:3000`.
+4. Start the add-on, then open it from the Home Assistant sidebar.
+5. Point a TRMNL device at `http://HA-IP:3000` — devices use the port, not the sidebar.
 
 See [DOCS.md](./DOCS.md) for configuration and the details that matter when your devices can't
 reach the server.
