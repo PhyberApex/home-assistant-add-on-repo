@@ -6,6 +6,7 @@ RUN apk add --no-cache \
       jq \
       postgresql17 \
       postgresql17-client \
+      postgresql17-contrib \
       su-exec \
       tzdata
 
