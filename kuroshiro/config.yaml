@@ -11,9 +11,6 @@ ports:
   3000/tcp: 3000
 ports_description:
   3000/tcp: "Kuroshiro web UI and the API your TRMNL devices poll"
-ingress: true
-ingress_port: 3000
-panel_icon: "mdi:television-guide"
 hassio_api: true
 options:
   api_url: ""

@@ -10,4 +10,3 @@
 - Device screens, firmware and plugin uploads persisted under `/data` so they survive add-on updates
 - `api_url` option for the address your TRMNL devices should talk to, auto-detected from the
   Supervisor network info when left empty
-- Ingress panel for the web UI, alongside the published port that devices poll

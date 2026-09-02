@@ -35,14 +35,13 @@ one.
 | ---------- | -------------------------------------------------------------------------- |
 | `3000/tcp` | The web UI, **and** the API your TRMNL devices poll. Devices need this port |
 
-The UI is also available through the Home Assistant sidebar (ingress). Devices cannot use ingress —
-they are not Home Assistant clients and have no session — so the published port has to stay
-reachable on your network for them to work.
+Open the UI at `http://<your-ha-ip>:3000`. Devices use the same port — they are not Home Assistant
+clients, so it has to stay reachable on your network for them to work.
 
-> **Known limitation:** the sidebar panel currently loads and then fails its API calls, because
-> Kuroshiro's UI requests absolute `/api/...` paths that ingress's prefix breaks. This is tracked
-> upstream in [PhyberApex/kuroshiro#908][ingress-issue]. Until that ships, use
-> `http://<your-ha-ip>:3000` directly. The published port is unaffected either way.
+There is no Home Assistant sidebar panel yet. Ingress serves an add-on under a
+`/api/hassio_ingress/<token>/` prefix, and Kuroshiro's UI requests absolute `/api/...` paths that
+the prefix breaks, so a panel would load and then fail every call. Tracked upstream in
+[PhyberApex/kuroshiro#908][ingress-issue]; the panel will be added once that ships.
 
 ## Data and backups
 
