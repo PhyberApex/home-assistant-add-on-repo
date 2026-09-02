@@ -1,5 +1,5 @@
 ARG BUILD_FROM
-ARG KUROSHIRO_VERSION=0.11.0
+ARG KUROSHIRO_VERSION=0.12.2
 
 # Pinned to amd64 because upstream publishes a single-arch image. Everything taken
 # from it is architecture-independent - the JS bundles, the static assets, and
