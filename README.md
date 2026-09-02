@@ -9,6 +9,14 @@
 
 This repository contains the following add-ons
 
+### [Kuroshiro](./kuroshiro)
+
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+
+_Self-hosted BYOS server for [TRMNL](https://usetrmnl.com/) e-ink displays, based on
+[Kuroshiro](https://github.com/PhyberApex/kuroshiro), with PostgreSQL bundled in._
+
 ### [OLED system info](./oled_system_info)
 
 ![Supports aarch64 Architecture][aarch64-shield]
@@ -35,3 +43,4 @@ Notes to developers after forking or using the github template feature:
  -->
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
+[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg

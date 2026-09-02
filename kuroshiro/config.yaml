@@ -1,0 +1,24 @@
+name: "Kuroshiro"
+description: "Self-hosted BYOS server for your TRMNL e-ink displays, with a bundled Postgres"
+version: "0.1.0"
+slug: "kuroshiro"
+url: "https://github.com/PhyberApex/home-assistant-add-on-repo/tree/main/kuroshiro"
+init: false
+startup: application
+boot: auto
+arch:
+  - aarch64
+  - amd64
+ports:
+  3000/tcp: 3000
+ports_description:
+  3000/tcp: "Kuroshiro web UI and the API your TRMNL devices poll"
+ingress: true
+ingress_port: 3000
+panel_icon: "mdi:television-guide"
+hassio_api: true
+options:
+  api_url: ""
+schema:
+  api_url: "str?"
+image: "ghcr.io/phyberapex/{arch}-kuroshiro"
