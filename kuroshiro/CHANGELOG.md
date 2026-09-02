@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.2.1] - 2026-09-02
+
+### Fixed
+- Migrations failed on a fresh install with `extension "uuid-ossp" is not available`. Alpine ships
+  the contrib extensions separately from the server, so `postgresql17-contrib` is now installed
+  alongside it. Existing installs recover on restart - the failed migration rolled back, so no data
+  is lost and nothing needs wiping.
+
 ## [0.12.2] - 2026-09-02
 
 ### Added
