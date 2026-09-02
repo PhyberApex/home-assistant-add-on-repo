@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] - 2026-09-02
+## [0.12.2] - 2026-09-02
 
 ### Added
 - Initial release, packaging [Kuroshiro](https://github.com/PhyberApex/kuroshiro) 0.12.2 as a
