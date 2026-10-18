@@ -1,6 +1,6 @@
 name: "Kuroshiro"
 description: "Self-hosted BYOS server for your TRMNL e-ink displays, with a bundled Postgres"
-version: "0.12.2.1"
+version: "0.20.0"
 slug: "kuroshiro"
 url: "https://github.com/PhyberApex/home-assistant-add-on-repo/tree/main/kuroshiro"
 init: false
@@ -15,6 +15,8 @@ ingress: true
 ingress_port: 3000
 panel_icon: "mdi:television-guide"
 hassio_api: true
+# Stop the add-on first: a hot copy of a running Postgres data dir restores torn.
+backup: cold
 options:
   api_url: ""
 schema:

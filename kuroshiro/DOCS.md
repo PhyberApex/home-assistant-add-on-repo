@@ -53,7 +53,6 @@ Assistant backups and survives add-on updates:
 | `/data/postgres`    | The bundled PostgreSQL cluster                 |
 | `/data/screens`     | Rendered device screens and their originals    |
 | `/data/firmware`    | Synced and custom-uploaded firmware images     |
-| `/data/uploads`     | Temporary files from plugin and recipe imports |
 
 Uninstalling the add-on deletes all of it. Take a backup first if you want to keep it.
 
