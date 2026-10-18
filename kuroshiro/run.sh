@@ -77,7 +77,6 @@ resolve_api_url() {
 
 persist_in_data /data/screens/devices /app/public/screens/devices
 persist_in_data /data/firmware /app/public/firmware
-persist_in_data /data/uploads /app/uploads
 
 KUROSHIRO_API_URL=$(resolve_api_url)
 if [ -z "$KUROSHIRO_API_URL" ]; then

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.20.0] - 2026-10-18
+
+### Changed
+- Packages [Kuroshiro](https://github.com/PhyberApex/kuroshiro) 0.20.0 (was 0.12.2). See the
+  [upstream releases](https://github.com/PhyberApex/kuroshiro/releases) for what changed in
+  Kuroshiro itself; the add-on's wiring (bundled Postgres, `/data` layout, `api_url`) is unchanged,
+  so existing installs update in place.
+- Backups are taken cold. Home Assistant stops the add-on before copying `/data`, so the bundled
+  Postgres cluster is never snapshotted mid-write.
+- Plugin and recipe uploads are no longer persisted under `/data/uploads`. Kuroshiro holds uploads
+  in memory now, and Housekeeping offers to clear the folder left behind by older versions.
+
 ## [0.12.2.1] - 2026-09-02
 
 ### Fixed
