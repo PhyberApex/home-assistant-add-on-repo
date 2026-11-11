@@ -1,6 +1,8 @@
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
+USER root
+
 RUN apk add --no-cache \
       curl \
       jq \
