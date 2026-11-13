@@ -1,10 +1,20 @@
 # Changelog
 
+## [0.23.1] - 2026-11-13
+
+### Changed
+- Packages [Kuroshiro](https://github.com/usetrmnl/kuroshiro) 0.23.1 (was 0.23.0). The add-on's
+  wiring (bundled Postgres, `/data` layout, `api_url`) is unchanged, so existing installs update in
+  place.
+- Kuroshiro moved to the `usetrmnl` organisation. The add-on now builds from
+  `ghcr.io/usetrmnl/kuroshiro` and the links in this repository point there. The add-on's own
+  published image, `ghcr.io/phyberapex/{arch}-kuroshiro`, is unchanged.
+
 ## [0.23.0] - 2026-11-11
 
 ### Changed
-- Packages [Kuroshiro](https://github.com/PhyberApex/kuroshiro) 0.23.0 (was 0.20.0). See the
-  [upstream releases](https://github.com/PhyberApex/kuroshiro/releases) for what changed in
+- Packages [Kuroshiro](https://github.com/usetrmnl/kuroshiro) 0.23.0 (was 0.20.0). See the
+  [upstream releases](https://github.com/usetrmnl/kuroshiro/releases) for what changed in
   Kuroshiro itself; the add-on's wiring (bundled Postgres, `/data` layout, `api_url`) is unchanged,
   so existing installs update in place.
 - Kuroshiro no longer runs as root. The add-on still starts as root, because it has a Postgres
@@ -25,8 +35,8 @@
 ## [0.20.0] - 2026-10-18
 
 ### Changed
-- Packages [Kuroshiro](https://github.com/PhyberApex/kuroshiro) 0.20.0 (was 0.12.2). See the
-  [upstream releases](https://github.com/PhyberApex/kuroshiro/releases) for what changed in
+- Packages [Kuroshiro](https://github.com/usetrmnl/kuroshiro) 0.20.0 (was 0.12.2). See the
+  [upstream releases](https://github.com/usetrmnl/kuroshiro/releases) for what changed in
   Kuroshiro itself; the add-on's wiring (bundled Postgres, `/data` layout, `api_url`) is unchanged,
   so existing installs update in place.
 - Backups are taken cold. Home Assistant stops the add-on before copying `/data`, so the bundled
@@ -45,7 +55,7 @@
 ## [0.12.2] - 2026-09-02
 
 ### Added
-- Initial release, packaging [Kuroshiro](https://github.com/PhyberApex/kuroshiro) 0.12.2 as a
+- Initial release, packaging [Kuroshiro](https://github.com/usetrmnl/kuroshiro) 0.12.2 as a
   Home Assistant add-on. The add-on version tracks the Kuroshiro version it packages.
 - Bundled PostgreSQL 17, initialised on first start and stored in `/data/postgres`, so no separate
   database add-on is needed and the data is covered by Home Assistant backups

@@ -68,4 +68,4 @@ Kuroshiro is still in alpha and not feature complete. Breaking changes happen, a
 require wiping data and starting fresh. See the [upstream README][kuroshiro] before relying on it
 for anything you care about.
 
-[kuroshiro]: https://github.com/PhyberApex/kuroshiro
+[kuroshiro]: https://github.com/usetrmnl/kuroshiro

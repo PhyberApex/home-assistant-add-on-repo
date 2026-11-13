@@ -15,7 +15,7 @@ This repository contains the following add-ons
 ![Supports amd64 Architecture][amd64-shield]
 
 _Self-hosted BYOS server for [TRMNL](https://usetrmnl.com/) e-ink displays, based on
-[Kuroshiro](https://github.com/PhyberApex/kuroshiro), with PostgreSQL bundled in._
+[Kuroshiro](https://github.com/usetrmnl/kuroshiro), with PostgreSQL bundled in._
 
 ### [OLED system info](./oled_system_info)
 

@@ -21,7 +21,7 @@ the port your TRMNL devices poll.
 See [DOCS.md](./DOCS.md) for configuration and the details that matter when your devices can't
 reach the server.
 
-[kuroshiro]: https://github.com/PhyberApex/kuroshiro
+[kuroshiro]: https://github.com/usetrmnl/kuroshiro
 [trmnl]: https://usetrmnl.com/
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
