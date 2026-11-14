@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- The `render_allowed_hosts` option, which names the hosts on your network a Screen's Template may
+  fetch from. Kuroshiro now refuses a private address a Template asks for unless its host is named,
+  because a Template is third-party code it runs with JavaScript on. Leave the option empty unless
+  one of your Screens renders from a local service; the add-on only passes it on when it is set, so
+  it is inert against the Kuroshiro this add-on currently packages.
+
 ## [0.23.1] - 2026-11-13
 
 ### Changed

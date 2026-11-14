@@ -19,6 +19,9 @@ hassio_api: true
 backup: cold
 options:
   api_url: ""
+  render_allowed_hosts: []
 schema:
   api_url: "str?"
+  render_allowed_hosts:
+    - "str"
 image: "ghcr.io/phyberapex/{arch}-kuroshiro"

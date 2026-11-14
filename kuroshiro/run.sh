@@ -75,6 +75,12 @@ resolve_api_url() {
   return 0
 }
 
+# Kuroshiro refuses a private address a Screen's Template asks for unless its host is named here.
+render_allowed_hosts() {
+  [ -f "$OPTIONS_FILE" ] || return 0
+  jq -r '(.render_allowed_hosts // []) | join(",")' "$OPTIONS_FILE"
+}
+
 persist_in_data /data/screens/devices /app/public/screens/devices
 persist_in_data /data/firmware /app/public/firmware
 
@@ -86,6 +92,13 @@ if [ -z "$KUROSHIRO_API_URL" ]; then
 fi
 export KUROSHIRO_API_URL
 log "devices will be pointed at $KUROSHIRO_API_URL"
+
+# Only exported when the option is set: an older Kuroshiro warns about a variable it does not read.
+RENDER_ALLOWED_HOSTS=$(render_allowed_hosts)
+if [ -n "$RENDER_ALLOWED_HOSTS" ]; then
+  export KUROSHIRO_RENDER_ALLOWED_HOSTS="$RENDER_ALLOWED_HOSTS"
+  log "screens may render from $RENDER_ALLOWED_HOSTS"
+fi
 
 start_postgres
 

@@ -4,7 +4,8 @@
 
 1. Add this add-on repository to Home Assistant.
 2. Install the **Kuroshiro** add-on.
-3. Review the `api_url` option below.
+3. Review the `api_url` option below, and `render_allowed_hosts` if a Screen of yours renders from
+   a service on your network.
 4. Start the add-on and watch the log — the first start initialises the database, which takes a
    few seconds longer than later ones.
 
@@ -28,6 +29,33 @@ use `http://<that-ip>:3000`. Set it explicitly when:
 
 The add-on refuses to start if it cannot determine an address, rather than starting with a broken
 one.
+
+### Option: `render_allowed_hosts`
+
+Hosts on your network a Screen's Template may fetch from, as host names, IP addresses or CIDR
+ranges. Empty by default, which means none.
+
+A Plugin's Template is third-party code — most of it imported from the Recipe Gallery — and
+Kuroshiro runs it with JavaScript on in its own browser on every render. So it refuses every
+private address and internal host name a Template asks for, and this option is where you name the
+exceptions:
+
+```yaml
+render_allowed_hosts:
+  - homeassistant.local
+  - 192.168.1.0/24
+```
+
+Set it when a Template of yours reads from a service on your network — your Home Assistant
+instance, a NAS, a local weather station. A host named by name may be reached at whatever address
+it currently resolves to; a range is matched against the addresses themselves.
+
+Nothing you list here can reach Kuroshiro's own admin API, which is refused before this option is
+consulted. `0.0.0.0/0` and `::/0` together allow your whole network, if you would rather make that
+choice once and be done with it.
+
+A Template whose host is not listed sees the fetch fail as a network error, so a Screen that used
+to draw data from your LAN comes up blank until you add its host here.
 
 ## Ports
 
