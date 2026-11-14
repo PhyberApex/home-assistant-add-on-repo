@@ -1,13 +1,20 @@
 # Changelog
 
-## [Unreleased]
+## [0.24.0] - 2026-11-14
 
 ### Added
 - The `render_allowed_hosts` option, which names the hosts on your network a Screen's Template may
-  fetch from. Kuroshiro now refuses a private address a Template asks for unless its host is named,
-  because a Template is third-party code it runs with JavaScript on. Leave the option empty unless
-  one of your Screens renders from a local service; the add-on only passes it on when it is set, so
-  it is inert against the Kuroshiro this add-on currently packages.
+  fetch from. Leave it empty unless one of your Screens renders from a local service.
+
+### Changed
+- Packages [Kuroshiro](https://github.com/usetrmnl/kuroshiro) 0.24.0 (was 0.23.1). Two changes in it
+  can stop a Screen that used to draw:
+  - A Template's fetch of a **private address** is now refused unless the option above names its
+    host, because a Template is third-party code Kuroshiro runs with JavaScript on. This counts a
+    public host name your own network resolves to a LAN address, so check `DOCS.md` before
+    updating if any Screen of yours reads from your Home Assistant instance or a NAS.
+  - `crypto.subtle` is no longer available to a Data Source transform. A transform that calls it
+    fails where it used to run.
 
 ## [0.23.1] - 2026-11-13
 

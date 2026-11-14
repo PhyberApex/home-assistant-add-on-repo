@@ -50,6 +50,10 @@ Set it when a Template of yours reads from a service on your network — your Ho
 instance, a NAS, a local weather station. A host named by name may be reached at whatever address
 it currently resolves to; a range is matched against the addresses themselves.
 
+A public host name counts too when your network resolves it to a private address. If
+`photos.example.com` is your own reverse proxy and your router answers that name with a LAN
+address, a Template fetching it is refused until you list it here, the same as a bare IP.
+
 Nothing you list here can reach Kuroshiro's own admin API, which is refused before this option is
 consulted. `0.0.0.0/0` and `::/0` together allow your whole network, if you would rather make that
 choice once and be done with it.

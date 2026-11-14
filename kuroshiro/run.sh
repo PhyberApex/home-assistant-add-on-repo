@@ -93,7 +93,7 @@ fi
 export KUROSHIRO_API_URL
 log "devices will be pointed at $KUROSHIRO_API_URL"
 
-# Only exported when the option is set: an older Kuroshiro warns about a variable it does not read.
+# Left unset when the option is empty, so Kuroshiro keeps its own default of reaching nothing private.
 RENDER_ALLOWED_HOSTS=$(render_allowed_hosts)
 if [ -n "$RENDER_ALLOWED_HOSTS" ]; then
   export KUROSHIRO_RENDER_ALLOWED_HOSTS="$RENDER_ALLOWED_HOSTS"
