@@ -180,7 +180,7 @@ The `3c` shows your OLED is detected!
 
 ### Required Components
 
-- **SSD1306 OLED Display (128x32, I2C)** - [Example](https://www.aliexpress.com/item/1pcs-0-91-inch-OLED-module-0-91-white-OLED-128X32-OLED-LCD-LED-Display-Module/32672229793.html)
+- **SSD1306 OLED Display (128x32 or 128x64, I2C)** - [Example](https://www.aliexpress.com/item/1pcs-0-91-inch-OLED-module-0-91-white-OLED-128X32-OLED-LCD-LED-Display-Module/32672229793.html)
 - **Push button (6×6×7mm)** - [Example](https://www.aliexpress.com/item/100PCS-6X6x7mm-4PIN-dip-TACT-push-button-switch-Micro-key-power-tactile-switches-6x6x7-6-6/32854062885.html)
 - **3mm LED** (optional) - Any color
 - **10K resistor** - For button pull-up
@@ -344,6 +344,7 @@ When disabled, GPIO20 is never requested at all, the display runs in
 
 | Option | Default | Description |
 |--------|---------|--------------|
+| `display_size` | `128x32` | Resolution of the connected SSD1306 panel: `128x32` (0.91") or `128x64` (0.96"). On `128x64` every stat gets its own line and the always-on temperature screen uses a larger font. A wrong value shows a vertically stretched or interlaced picture. |
 | `flip_display` | `true` | `true` mounts the display upside-down relative to `false` (180°). Only these two orientations are supported — 90°/270° would swap the display's width and height, which the fixed-position layout doesn't handle. |
 | `show_hostname` | `true` | Show the `NAME:` line. |
 | `show_ip` | `true` | Show the `IP:` line. |
@@ -632,15 +633,9 @@ SHUTDOWN_TIMEOUT = 10  # Additional seconds for shutdown
 
 ### Using Different I2C Address
 
-If your OLED uses a different address (some use 0x3D):
-
-Edit `system_info.py`:
-```python
-i2c = busio.I2C(board.SCL, board.SDA)
-oled = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, addr=0x3D)  # Change 0x3C to 0x3D
-```
-
-Then rebuild the add-on.
+The add-on probes `0x3C` and then `0x3D` at startup and uses the first address a display
+answers on, so both common SSD1306 addresses work without configuration. For any other
+address, add it to `DISPLAY_I2C_ADDRS` in `system_info.py` and rebuild the add-on.
 
 ---
 
@@ -765,6 +760,8 @@ MIT License - See [LICENSE.md] for full license text.
 
 ## Version History
 
+- **2.2.0**: 128x64 display support (`display_size`), automatic detection of the OLED I2C
+  address (`0x3C`/`0x3D`)
 - **2.1.0**: CPU temperature display (compact + big always-on screen), `enable_button` option to
   make the physical button optional (fixes an unwanted reboot/shutdown on boards with GPIO20
   floating unwired), always-on display mode, opt-in fan control, `flip_display`, and per-stat
