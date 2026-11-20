@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0] - 2026-11-20
+
+### Added
+- `display_size` option (`128x32` default, or `128x64`) for 0.96" SSD1306 panels. On `128x64`
+  each stat gets its own line and the always-on temperature screen uses a larger font
+- The OLED I2C address is detected automatically (`0x3C`, then `0x3D`)
+
 ## [2.1.0] - 2026-07-25
 
 ### Added

@@ -26,6 +26,12 @@ THERMAL_ZONE_PATH = '/sys/class/thermal/thermal_zone0/temp'
 FAN_I2C_ADDR = 0x20
 FAN_PIN_MASK = 0x01  # P0 on the PCF8574 IO-expander, active-low
 
+DISPLAY_WIDTH = 128
+DISPLAY_HEIGHTS = {"128x32": 32, "128x64": 64}
+DISPLAY_I2C_ADDRS = (0x3C, 0x3D)
+LINE_HEIGHT = 12
+BIG_FONT_SIZES = {32: 28, 64: 44}
+
 
 def log(message):
     """Print log message with timestamp"""
@@ -212,22 +218,58 @@ def get_system_info():
     return hostname, ip, cpu, mem, temp
 
 
-def draw_info_screen(draw, x, top, font, hostname, ip, cpu, mem, temp, stats_cfg):
-    """Render the hostname/IP/CPU+MEM+temp info screen into `draw`"""
-    if stats_cfg.hostname:
-        draw.text((x, top), f"NAME: {hostname}", font=font, fill=255)
-    if stats_cfg.ip:
-        draw.text((x, top + 12), f"IP  : {ip}", font=font, fill=255)
+def info_lines(height, hostname, ip, cpu, mem, temp, stats_cfg):
+    """Text rows of the info screen: one stat per row when the display is tall
+    enough, otherwise CPU/MEM/temp share the third row"""
+    stats = [
+        (stats_cfg.cpu, "CPU", f"{cpu.strip()}%"),
+        (stats_cfg.memory, "MEM", f"{mem.strip()}%"),
+        (stats_cfg.temperature, "TEMP", f"{temp}C"),
+    ]
 
-    parts = []
-    if stats_cfg.cpu:
-        parts.append(f"CPU:{cpu.strip()}%")
-    if stats_cfg.memory:
-        parts.append(f"MEM:{mem.strip()}%")
-    if stats_cfg.temperature:
-        parts.append(f"{temp}C")
-    if parts:
-        draw.text((x, top + 24), " ".join(parts), font=font, fill=255)
+    if height >= 5 * LINE_HEIGHT:
+        rows = [
+            (stats_cfg.hostname, "NAME", hostname),
+            (stats_cfg.ip, "IP", ip),
+            *stats,
+        ]
+        return [f"{label}: {value}" for shown, label, value in rows if shown]
+
+    compact_stats = " ".join(
+        value if label == "TEMP" else f"{label}:{value}"
+        for shown, label, value in stats if shown
+    )
+    return [
+        f"NAME: {hostname}" if stats_cfg.hostname else "",
+        f"IP  : {ip}" if stats_cfg.ip else "",
+        compact_stats,
+    ]
+
+
+def draw_lines(draw, disp, font, lines):
+    """Draw text rows as a block that is vertically centered on the display"""
+    top = (disp.height - len(lines) * LINE_HEIGHT) // 2
+    for row, line in enumerate(lines):
+        draw.text((0, top + row * LINE_HEIGHT), line, font=font, fill=255)
+
+
+def show_lines(disp, image, draw, font, lines):
+    draw.rectangle((0, 0, disp.width, disp.height), outline=0, fill=0)
+    draw_lines(draw, disp, font, lines)
+    disp.image(image)
+    disp.show()
+
+
+def find_display_address(bus):
+    """First address an SSD1306 answers on; the primary address if none does,
+    since some panels do not acknowledge the read used for probing"""
+    for addr in DISPLAY_I2C_ADDRS:
+        try:
+            bus.read_byte(addr)
+            return addr
+        except OSError:
+            continue
+    return DISPLAY_I2C_ADDRS[0]
 
 
 def draw_big_temp_screen(draw, disp, big_font, small_font, temp_c, fan_on):
@@ -298,7 +340,7 @@ def fan_tick(bus, current_on, temp_c, temp_on, temp_off):
     return desired
 
 
-def run_button_loop(disp, image, draw, font, btn_line, i2c_bus, fan_on, fan_cfg, stats_cfg, x, top):
+def run_button_loop(disp, image, draw, font, btn_line, i2c_bus, fan_on, fan_cfg, stats_cfg):
     """Button-driven mode: press to wake the display, hold to reboot/shutdown"""
     disp_timer = 0
     menu_timer = 0
@@ -344,7 +386,8 @@ def run_button_loop(disp, image, draw, font, btn_line, i2c_bus, fan_on, fan_cfg,
         if disp_timer > 0:
             if menu_state == 0:
                 hostname, ip, cpu, mem, temp = get_system_info()
-                draw_info_screen(draw, x, top, font, hostname, ip, cpu, mem, temp, stats_cfg)
+                draw_lines(draw, disp, font,
+                           info_lines(disp.height, hostname, ip, cpu, mem, temp, stats_cfg))
                 disp_timer -= 1
 
                 if disp_timer == 0:
@@ -358,27 +401,27 @@ def run_button_loop(disp, image, draw, font, btn_line, i2c_bus, fan_on, fan_cfg,
 
             elif menu_state == 1:
                 if button_state == 1:
-                    draw.text((x, top+12), "Performing Reboot...", font=font, fill=255)
-                    disp.image(image)
-                    disp.show()
+                    show_lines(disp, image, draw, font, ["Performing Reboot..."])
                     time.sleep(3)
                     reboot_system()
                 else:
-                    draw.text((x, top),    ".......Reboot.......", font=font, fill=255)
-                    draw.text((x, top+12), "   Release Button   ", font=font, fill=255)
-                    draw.text((x, top+24), "      To Reboot     ", font=font, fill=255)
+                    draw_lines(draw, disp, font, [
+                        ".......Reboot.......",
+                        "   Release Button   ",
+                        "      To Reboot     ",
+                    ])
 
             elif menu_state == 2:
                 if button_state == 1:
-                    draw.text((x, top+12), "Shutting down.......", font=font, fill=255)
-                    disp.image(image)
-                    disp.show()
+                    show_lines(disp, image, draw, font, ["Shutting down......."])
                     time.sleep(3)
                     shutdown_system()
                 else:
-                    draw.text((x, top),    "......Shutdown......", font=font, fill=255)
-                    draw.text((x, top+12), "   Release Button   ", font=font, fill=255)
-                    draw.text((x, top+24), "    To Shutdown     ", font=font, fill=255)
+                    draw_lines(draw, disp, font, [
+                        "......Shutdown......",
+                        "   Release Button   ",
+                        "    To Shutdown     ",
+                    ])
 
             disp.image(image)
             disp.show()
@@ -389,7 +432,7 @@ def run_button_loop(disp, image, draw, font, btn_line, i2c_bus, fan_on, fan_cfg,
         time.sleep(1)
 
 
-def run_always_on_loop(disp, image, draw, font, big_font, i2c_bus, fan_on, fan_cfg, stats_cfg, x, top):
+def run_always_on_loop(disp, image, draw, font, big_font, i2c_bus, fan_on, fan_cfg, stats_cfg):
     """Always-on mode (no button): cycles the info screen and a big temperature
     screen every PAGE_SECONDS, with no sleep timeout and no reboot/shutdown"""
     PAGE_SECONDS = 5
@@ -411,7 +454,8 @@ def run_always_on_loop(disp, image, draw, font, big_font, i2c_bus, fan_on, fan_c
             draw_big_temp_screen(draw, disp, big_font, font, temp_c, fan_on if fan_cfg.enabled else None)
         else:
             hostname, ip, cpu, mem, temp = get_system_info()
-            draw_info_screen(draw, x, top, font, hostname, ip, cpu, mem, temp, stats_cfg)
+            draw_lines(draw, disp, font,
+                       info_lines(disp.height, hostname, ip, cpu, mem, temp, stats_cfg))
 
         disp.image(image)
         disp.show()
@@ -433,6 +477,11 @@ def main():
     fan_temp_on = int(os.getenv("FAN_TEMP_ON", "60"))
     fan_temp_off = int(os.getenv("FAN_TEMP_OFF", "50"))
     flip_display = env_bool("FLIP_DISPLAY", True)
+    display_size = os.getenv("DISPLAY_SIZE", "128x32")
+    if display_size not in DISPLAY_HEIGHTS:
+        log(f"WARNING: Unknown display_size '{display_size}' - falling back to 128x32")
+        display_size = "128x32"
+    display_height = DISPLAY_HEIGHTS[display_size]
     stats_cfg = StatsConfig(
         hostname=env_bool("SHOW_HOSTNAME", True),
         ip=env_bool("SHOW_IP", True),
@@ -461,7 +510,9 @@ def main():
     # Display configuration
     log("Initializing I2C and OLED display")
     i2c = I2CAdapter(1)
-    disp = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
+    display_addr = find_display_address(i2c.bus)
+    log(f"Using {display_size} display at 0x{display_addr:02x}")
+    disp = adafruit_ssd1306.SSD1306_I2C(DISPLAY_WIDTH, display_height, i2c, addr=display_addr)
     disp.rotation = 2 if flip_display else 0
     disp.fill(0)
     disp.show()
@@ -471,12 +522,7 @@ def main():
     image = Image.new("1", (disp.width, disp.height))
     draw = ImageDraw.Draw(image)
     font = ImageFont.load_default()
-    big_font = ImageFont.load_default(size=28)
-
-    # Display constants
-    padding = -2
-    x = 0
-    top = padding
+    big_font = ImageFont.load_default(size=BIG_FONT_SIZES[display_height])
 
     temp_probe = get_cpu_temperature()
     if temp_probe is None:
@@ -508,19 +554,18 @@ def main():
 
     # Startup message
     log("Displaying startup message")
-    draw.rectangle((0, 0, disp.width, disp.height), outline=0, fill=0)
-    draw.text((x, top),    "--------------------", font=font, fill=255)
-    draw.text((x, top+12), " Infoscreen Started ", font=font, fill=255)
-    draw.text((x, top+24), "--------------------", font=font, fill=255)
-    disp.image(image)
-    disp.show()
+    show_lines(disp, image, draw, font, [
+        "--------------------",
+        " Infoscreen Started ",
+        "--------------------",
+    ])
     time.sleep(5)
 
     try:
         if enable_button:
-            run_button_loop(disp, image, draw, font, btn_line, i2c.bus, fan_on, fan_cfg, stats_cfg, x, top)
+            run_button_loop(disp, image, draw, font, btn_line, i2c.bus, fan_on, fan_cfg, stats_cfg)
         else:
-            run_always_on_loop(disp, image, draw, font, big_font, i2c.bus, fan_on, fan_cfg, stats_cfg, x, top)
+            run_always_on_loop(disp, image, draw, font, big_font, i2c.bus, fan_on, fan_cfg, stats_cfg)
     except KeyboardInterrupt:
         log("Received keyboard interrupt")
     except Exception as e:

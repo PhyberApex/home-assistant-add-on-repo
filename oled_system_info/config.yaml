@@ -1,6 +1,6 @@
 name: "OLED System Info Display"
 description: "Displays system information on SSD1306 OLED screen with GPIO button control for reboot/shutdown"
-version: "2.1.0"
+version: "2.2.0"
 slug: "oled_system_info"
 init: false
 devices:
@@ -19,6 +19,7 @@ options:
   fan_temp_on: 60
   fan_temp_off: 50
   flip_display: true
+  display_size: "128x32"
   show_hostname: true
   show_ip: true
   show_cpu: true
@@ -32,6 +33,7 @@ schema:
   fan_temp_on: "int(30,90)"
   fan_temp_off: "int(20,85)"
   flip_display: "bool"
+  display_size: "list(128x32|128x64)"
   show_hostname: "bool"
   show_ip: "bool"
   show_cpu: "bool"
